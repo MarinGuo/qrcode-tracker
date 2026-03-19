@@ -133,11 +133,9 @@
     <div class="toast" id="toast"></div>
 
     <script type="module">
-        import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
-        import { ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js";
+        import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
 
         const db = window.db;
-        const storage = window.storage;
 
         let agents = [];
         let visits = [];
