@@ -6,8 +6,7 @@
     <title>添加微信</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, limit } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
-        import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js";
+        import { getFirestore, collection, addDoc, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA2qZZZxT-1DOVgg44vaStEFq1omOqcYVU",
@@ -20,7 +19,6 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const storage = getStorage(app);
 
         async function recordVisit(agentId) {
             try {
@@ -36,9 +34,13 @@
 
         async function loadWechatQr() {
             try {
-                const qrRef = ref(storage, 'wechat-qr/qr.png');
-                const url = await getDownloadURL(qrRef);
-                return url;
+                const docRef = doc(db, "config", "wechatQr");
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists() && docSnap.data().value) {
+                    return docSnap.data().value;
+                }
+                return null;
             } catch (error) {
                 console.error('加载微信二维码失败:', error);
                 return null;

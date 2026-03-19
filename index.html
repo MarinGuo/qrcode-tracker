@@ -6,8 +6,7 @@
     <title>代理商追踪系统 - 管理后台</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
-        import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA2qZZZxT-1DOVgg44vaStEFq1omOqcYVU",
@@ -20,12 +19,8 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const storage = getStorage(app);
 
-        window.firebaseApp = app;
         window.db = db;
-        window.storage = storage;
-        window.firebaseModules = { addDoc, getDocs, deleteDoc, doc, query, orderBy, ref, uploadString, getDownloadURL };
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
     <style>
@@ -186,10 +181,14 @@
 
         async function loadWechatQr() {
             try {
-                const qrRef = ref(storage, 'wechat-qr/qr.png');
-                wechatQrUrl = await getDownloadURL(qrRef);
-                const preview = document.getElementById('wechatPreview');
-                preview.innerHTML = `<img src="${wechatQrUrl}" alt="微信二维码">`;
+                const docRef = doc(db, "config", "wechatQr");
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists() && docSnap.data().value) {
+                    wechatQrUrl = docSnap.data().value;
+                    const preview = document.getElementById('wechatPreview');
+                    preview.innerHTML = `<img src="${wechatQrUrl}" alt="微信二维码">`;
+                }
             } catch (error) {
                 console.log('暂无微信二维码');
             }
@@ -346,10 +345,13 @@
                 
                 try {
                     showToast('上传中...');
-                    const qrRef = ref(storage, 'wechat-qr/qr.png');
-                    await uploadString(qrRef, base64, 'data_url');
                     
-                    wechatQrUrl = await getDownloadURL(qrRef);
+                    await setDoc(doc(db, "config", "wechatQr"), {
+                        value: base64,
+                        updatedAt: new Date().toISOString()
+                    });
+                    
+                    wechatQrUrl = base64;
                     const preview = document.getElementById('wechatPreview');
                     preview.innerHTML = `<img src="${wechatQrUrl}" alt="微信二维码">`;
                     
